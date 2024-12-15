@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票資訊</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        th {
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 導覽列 -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html">API 導覽</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="stock.html">股票資訊</a></li>
+                        <li class="nav-item"><a class="nav-link" href="air.html">空氣資訊</a></li>
+                        <li class="nav-item"><a class="nav-link" href="cat.html">貓咪圖片</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 內容區 -->
+    <div class="container mt-5">
+        <h1 class="mb-4">所有股票資訊</h1>
+
+        <!-- 搜尋欄位 -->
+        <div class="mb-4">
+            <input type="text" id="search-input" class="form-control" placeholder="輸入股票代碼或名稱進行搜尋...">
+        </div>
+
+        <!-- 資料表格 -->
+        <table class="table table-bordered" id="stock-table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('Code')">股票代碼</th>
+                    <th onclick="sortTable('Name')">股票名稱</th>
+                    <th onclick="sortTable('TradeVolume')">交易量</th>
+                    <th onclick="sortTable('TradeValue')">交易金額</th>
+                    <th onclick="sortTable('OpeningPrice')">開盤價</th>
+                    <th onclick="sortTable('HighestPrice')">最高價</th>
+                    <th onclick="sortTable('LowestPrice')">最低價</th>
+                    <th onclick="sortTable('ClosingPrice')">收盤價</th>
+                    <th onclick="sortTable('Change')">漲跌</th>
+                    <th onclick="sortTable('Transaction')">成交筆數</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        let allData = []; // 保存所有股票資料
+        let sortDirection = {}; // 紀錄每個欄位的排序方向
+        const stockTableBody = document.getElementById('stock-table').getElementsByTagName('tbody')[0];
+        const searchInput = document.getElementById('search-input');
+
+        // 載入資料
+        fetch('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
+            .then(response => response.json())
+            .then(data => {
+                allData = data;
+                renderTable(allData); // 渲染表格
+            })
+            .catch(error => console.error('Error:', error));
+
+        // 渲染表格的函數
+        function renderTable(data) {
+            stockTableBody.innerHTML = ''; // 清空表格內容
+
+            data.forEach(stock => {
+                const row = stockTableBody.insertRow();
+
+                row.innerHTML = `
+                    <td>${stock.Code}</td>
+                    <td>${stock.Name}</td>
+                    <td>${stock.TradeVolume}</td>
+                    <td>${stock.TradeValue}</td>
+                    <td>${stock.OpeningPrice}</td>
+                    <td>${stock.HighestPrice}</td>
+                    <td>${stock.LowestPrice}</td>
+                    <td>${stock.ClosingPrice}</td>
+                    <td>${stock.Change}</td>
+                    <td>${stock.Transaction}</td>
+                `;
+            });
+        }
+
+        // 搜尋功能
+        searchInput.addEventListener('input', () => {
+            const keyword = searchInput.value.toLowerCase();
+            const filteredData = allData.filter(stock =>
+                stock.Code.toLowerCase().includes(keyword) ||
+                stock.Name.toLowerCase().includes(keyword)
+            );
+            renderTable(filteredData);
+        });
+
+        // 排序功能
+        function sortTable(column) {
+            sortDirection[column] = !sortDirection[column]; // 切換升序/降序
+            const sortedData = [...allData].sort((a, b) => {
+                const valueA = isNaN(a[column]) ? a[column] : parseFloat(a[column]) || 0;
+                const valueB = isNaN(b[column]) ? b[column] : parseFloat(b[column]) || 0;
+
+                if (sortDirection[column]) {
+                    return valueA > valueB ? 1 : -1;
+                } else {
+                    return valueA < valueB ? 1 : -1;
+                }
+            });
+            renderTable(sortedData);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

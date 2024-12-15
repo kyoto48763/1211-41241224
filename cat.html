@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>隨機貓咪圖片</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      padding-top: 70px;
+      /* 防止被 navbar 遮住 */
+      text-align: center;
+      background-color: #f8f9fa;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    button {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 導覽列 -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="index.html">API 導覽</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="stock.html">股票資訊</a></li>
+            <li class="nav-item"><a class="nav-link" href="air.html">空氣資訊</a></li>
+            <li class="nav-item"><a class="nav-link active" href="cat.html">貓咪圖片</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- 內容區 -->
+  <div class="container">
+    <h1 class="mt-4">隨機貓咪圖片</h1>
+    <p>點擊按鈕獲取一張可愛的貓咪圖片！</p>
+    <button class="btn btn-primary" id="load-cat-btn">載入貓咪圖片</button>
+    <div id="cat-image-container">
+      <!-- 貓咪圖片會顯示在這裡 -->
+    </div>
+  </div>
+
+  <script>
+    const loadCatBtn = document.getElementById('load-cat-btn');
+    const catImageContainer = document.getElementById('cat-image-container');
+
+    const apiKey = 'live_K1CSW603lX8JBmJrK9M5qpoL0GDd6eWjWWl6NeHbgtjias01MtTyAjqn5eOI5tCe'; // 請將此處替換成你的實際金鑰
+
+    function fetchCatImage() {
+      fetch('https://api.thecatapi.com/v1/images/search', {
+        headers: {
+          'x-api-key': apiKey // 將 API 金鑰加入 headers
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          const catImageUrl = data[0].url; // 取得圖片 URL
+          displayCatImage(catImageUrl);   // 顯示圖片
+        })
+        .catch(error => {
+          console.error('Error fetching cat image:', error);
+          catImageContainer.innerHTML = '<p class="text-danger">無法載入圖片，請稍後再試！</p>';
+        });
+    }
+
+
+    // 顯示貓咪圖片的函數
+    function displayCatImage(url) {
+      catImageContainer.innerHTML = `
+        <img src="${url}" alt="可愛的貓咪圖片" class="img-fluid">
+      `;
+    }
+
+    // 綁定按鈕事件
+    loadCatBtn.addEventListener('click', fetchCatImage);
+
+    // 初始化時載入一張貓咪圖片
+    fetchCatImage();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
